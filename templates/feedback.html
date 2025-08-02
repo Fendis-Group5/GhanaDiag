@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Provide Feedback - Automated Diagnostic System (ADS){% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <div class="flex items-center justify-center space-x-3 mb-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-ice-500 to-ice-600 rounded-xl flex items-center justify-center">
+                <i data-feather="message-circle" class="w-7 h-7 text-white"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-winter-800 dark:text-winter-100">Provide Feedback</h1>
+        </div>
+        <p class="text-winter-600 dark:text-winter-300 text-lg">
+            Help us improve our diagnostic accuracy by sharing your experience.
+        </p>
+    </div>
+
+    <!-- Assessment Summary -->
+    <div class="bg-white/60 dark:bg-winter-800/60 backdrop-blur-sm rounded-xl border border-winter-200 dark:border-winter-700 p-6 mb-8">
+        <h2 class="text-lg font-semibold text-winter-800 dark:text-winter-100 mb-4 flex items-center">
+            <i data-feather="file-text" class="w-5 h-5 mr-2 text-ice-600"></i>
+            Assessment Summary
+        </h2>
+        
+        <div class="grid md:grid-cols-2 gap-6 mb-4">
+            <div>
+                <h3 class="font-medium text-winter-700 dark:text-winter-300 mb-2">Assessment Date:</h3>
+                <p class="text-winter-600 dark:text-winter-400">{{ submission.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+            </div>
+            
+            {% if submission.name or submission.age %}
+            <div>
+                <h3 class="font-medium text-winter-700 dark:text-winter-300 mb-2">Patient:</h3>
+                <p class="text-winter-600 dark:text-winter-400">
+                    {% if submission.name %}{{ submission.name }}{% endif %}
+                    {% if submission.name and submission.age %}, {% endif %}
+                    {% if submission.age %}{{ submission.age }} years old{% endif %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Symptoms -->
+        <div class="mb-4">
+            <h3 class="font-medium text-winter-700 dark:text-winter-300 mb-2">Symptoms reported:</h3>
+            <div class="flex flex-wrap gap-2 mb-3">
+                {% for symptom in submission.symptoms_selected %}
+                <span class="bg-ice-100 dark:bg-ice-900/30 text-ice-800 dark:text-ice-200 px-3 py-1 rounded-full text-sm">
+                    {{ symptom.replace('_', ' ').title() }}
+                </span>
+                {% endfor %}
+            </div>
+            {% if submission.symptoms_text %}
+            <div class="bg-winter-50 dark:bg-winter-700/50 p-3 rounded-lg">
+                <p class="text-winter-600 dark:text-winter-400 text-sm">"{{ submission.symptoms_text }}"</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Top Diagnosis -->
+        {% if submission.diagnosis and submission.diagnosis.diagnoses %}
+        <div>
+            <h3 class="font-medium text-winter-700 dark:text-winter-300 mb-2">Our assessment suggested:</h3>
+            {% set top_diagnosis = submission.diagnosis.diagnoses[0] %}
+            <div class="bg-ice-50 dark:bg-ice-900/20 border border-ice-200 dark:border-ice-800 p-4 rounded-lg">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-semibold text-ice-800 dark:text-ice-200">{{ top_diagnosis.condition }}</span>
+                    <span class="text-sm font-medium text-ice-600 dark:text-ice-400">{{ top_diagnosis.confidence }}% confidence</span>
+                </div>
+                <p class="text-ice-700 dark:text-ice-300 text-sm">{{ top_diagnosis.description }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Feedback Form -->
+    <form method="POST" class="bg-white/60 dark:bg-winter-800/60 backdrop-blur-sm rounded-xl border border-winter-200 dark:border-winter-700 p-6">
+        <h2 class="text-lg font-semibold text-winter-800 dark:text-winter-100 mb-6 flex items-center">
+            <i data-feather="thumbs-up" class="w-5 h-5 mr-2 text-ice-600"></i>
+            Your Feedback
+        </h2>
+
+        <!-- Accuracy Question -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-winter-700 dark:text-winter-300 mb-4">
+                Was our assessment accurate compared to your actual diagnosis or how you felt?
+            </label>
+            <div class="space-y-3">
+                <label class="flex items-center p-4 rounded-lg border border-winter-200 dark:border-winter-600 bg-winter-50 dark:bg-winter-700/50 cursor-pointer hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors">
+                    <input type="radio" name="is_accurate" value="yes" required 
+                           class="w-4 h-4 text-green-600 bg-white dark:bg-winter-700 border-winter-300 dark:border-winter-600 focus:ring-green-500 focus:ring-2">
+                    <div class="ml-3">
+                        <div class="font-medium text-winter-800 dark:text-winter-100">Yes, it was accurate</div>
+                        <div class="text-sm text-winter-600 dark:text-winter-400">The assessment matched my actual condition or how I felt</div>
+                    </div>
+                </label>
+                
+                <label class="flex items-center p-4 rounded-lg border border-winter-200 dark:border-winter-600 bg-winter-50 dark:bg-winter-700/50 cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                    <input type="radio" name="is_accurate" value="no" required 
+                           class="w-4 h-4 text-red-600 bg-white dark:bg-winter-700 border-winter-300 dark:border-winter-600 focus:ring-red-500 focus:ring-2">
+                    <div class="ml-3">
+                        <div class="font-medium text-winter-800 dark:text-winter-100">No, it was not accurate</div>
+                        <div class="text-sm text-winter-600 dark:text-winter-400">The assessment did not match my actual condition</div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Comments -->
+        <div class="mb-6">
+            <label for="comments" class="block text-sm font-medium text-winter-700 dark:text-winter-300 mb-2">
+                Additional comments (optional)
+            </label>
+            <textarea id="comments" name="comments" rows="4" 
+                      class="w-full px-4 py-3 rounded-lg border border-winter-300 dark:border-winter-600 bg-white dark:bg-winter-700 text-winter-900 dark:text-winter-100 focus:ring-2 focus:ring-ice-500 focus:border-ice-500 transition-colors"
+                      placeholder="Please share any additional details about your experience, what was accurate or inaccurate, or how we can improve..."></textarea>
+            <p class="mt-2 text-sm text-winter-500 dark:text-winter-400">
+                Your feedback helps us improve our diagnostic accuracy for everyone in Ghana.
+            </p>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4">
+            <button type="submit" 
+                    class="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center">
+                <i data-feather="send" class="w-5 h-5 mr-2"></i>
+                Submit Feedback
+            </button>
+            
+            <a href="{{ url_for('history') }}" 
+               class="flex-1 bg-gradient-to-r from-winter-600 to-winter-700 hover:from-winter-700 hover:to-winter-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center">
+                <i data-feather="arrow-left" class="w-5 h-5 mr-2"></i>
+                Back to History
+            </a>
+        </div>
+    </form>
+
+    <!-- Information Box -->
+    <div class="mt-8 bg-ice-50 dark:bg-ice-900/20 border border-ice-200 dark:border-ice-800 rounded-xl p-6">
+        <div class="flex items-start">
+            <i data-feather="info" class="w-6 h-6 text-ice-600 dark:text-ice-400 mr-3 mt-1 flex-shrink-0"></i>
+            <div>
+                <h3 class="font-semibold text-ice-800 dark:text-ice-200 mb-2">Why Your Feedback Matters</h3>
+                <ul class="text-ice-700 dark:text-ice-300 text-sm space-y-1">
+                    <li>• Helps us improve diagnostic accuracy for conditions common in Ghana</li>
+                    <li>• Ensures our recommendations are culturally appropriate and practical</li>
+                    <li>• Contributes to better healthcare technology for our communities</li>
+                    <li>• Your privacy is protected - feedback is anonymous and secure</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

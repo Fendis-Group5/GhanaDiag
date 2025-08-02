@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Assessment History - Automated Diagnostic System (ADS){% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <div class="flex items-center justify-center space-x-3 mb-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-ice-500 to-ice-600 rounded-xl flex items-center justify-center">
+                <i data-feather="clock" class="w-7 h-7 text-white"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-winter-800 dark:text-winter-100">Assessment History</h1>
+        </div>
+        <p class="text-winter-600 dark:text-winter-300 text-lg">
+            Review your previous health assessments and track your symptoms over time.
+        </p>
+    </div>
+
+    {% if submissions %}
+        <!-- Summary Stats -->
+        <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white/60 dark:bg-winter-800/60 backdrop-blur-sm rounded-xl border border-winter-200 dark:border-winter-700 p-6 text-center">
+                <div class="text-2xl font-bold text-ice-600 dark:text-ice-400 mb-2">{{ submissions|length }}</div>
+                <div class="text-winter-600 dark:text-winter-400">Total Assessments</div>
+            </div>
+            
+            <div class="bg-white/60 dark:bg-winter-800/60 backdrop-blur-sm rounded-xl border border-winter-200 dark:border-winter-700 p-6 text-center">
+                <div class="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">
+                    {{ submissions|selectattr('feedback')|list|length }}
+                </div>
+                <div class="text-winter-600 dark:text-winter-400">With Feedback</div>
+            </div>
+            
+            <div class="bg-white/60 dark:bg-winter-800/60 backdrop-blur-sm rounded-xl border border-winter-200 dark:border-winter-700 p-6 text-center">
+                <div class="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-2">
+                    {% set recent_count = submissions|selectattr('created_at')|list|length if submissions|first and (submissions|first).created_at and ((submissions|first).created_at > (moment().subtract(7, 'days'))) else 0 %}
+                    {{ (submissions|list)[:7]|length }}
+                </div>
+                <div class="text-winter-600 dark:text-winter-400">Recent (7 days)</div>
+            </div>
+        </div>
+
+        <!-- Assessment List -->
+        <div class="space-y-6">
+            {% for submission in submissions %}
+            <div class="bg-white/60 dark:bg-winter-800/60 backdrop-blur-sm rounded-xl border border-winter-200 dark:border-winter-700 p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-3 mb-2">
+                            <h3 class="text-lg font-semibold text-winter-800 dark:text-winter-100">
+                                Assessment #{{ submission.id }}
+                            </h3>
+                            {% if submission.name %}
+                            <span class="text-sm text-winter-500 dark:text-winter-400">- {{ submission.name }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="flex items-center text-sm text-winter-500 dark:text-winter-400 space-x-4">
+                            <span class="flex items-center">
+                                <i data-feather="calendar" class="w-4 h-4 mr-1"></i>
+                                {{ submission.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                            </span>
+                            {% if submission.age %}
+                            <span class="flex items-center">
+                                <i data-feather="user" class="w-4 h-4 mr-1"></i>
+                                Age {{ submission.age }}
+                            </span>
+                            {% endif %}
+                            {% if submission.location %}
+                            <span class="flex items-center">
+                                <i data-feather="map-pin" class="w-4 h-4 mr-1"></i>
+                                {{ submission.location }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 lg:mt-0 flex items-center space-x-3">
+                        {% if submission.feedback %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                            {% if submission.feedback.is_accurate %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300
+                            {% else %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300{% endif %}">
+                            <i data-feather="{% if submission.feedback.is_accurate %}check{% else %}x{% endif %}" class="w-4 h-4 mr-1"></i>
+                            {% if submission.feedback.is_accurate %}Accurate{% else %}Not Accurate{% endif %}
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                            <i data-feather="help-circle" class="w-4 h-4 mr-1"></i>
+                            No Feedback
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Symptoms -->
+                <div class="mb-4">
+                    <h4 class="font-medium text-winter-700 dark:text-winter-300 mb-2">Symptoms reported:</h4>
+                    <div class="flex flex-wrap gap-2">
+                        {% for symptom in submission.symptoms_selected %}
+                        <span class="bg-ice-100 dark:bg-ice-900/30 text-ice-800 dark:text-ice-200 px-2 py-1 rounded text-sm">
+                            {{ symptom.replace('_', ' ').title() }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% if submission.symptoms_text %}
+                    <div class="mt-2">
+                        <p class="text-sm text-winter-600 dark:text-winter-400 bg-winter-50 dark:bg-winter-700/50 p-2 rounded">
+                            "{{ submission.symptoms_text[:100] }}{% if submission.symptoms_text|length > 100 %}...{% endif %}"
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Top Diagnosis -->
+                {% if submission.diagnosis and submission.diagnosis.diagnoses %}
+                <div class="mb-4">
+                    <h4 class="font-medium text-winter-700 dark:text-winter-300 mb-2">Top diagnosis:</h4>
+                    {% set top_diagnosis = submission.diagnosis.diagnoses[0] %}
+                    <div class="flex items-center justify-between bg-winter-50 dark:bg-winter-700/50 p-3 rounded-lg">
+                        <div>
+                            <span class="font-medium text-winter-800 dark:text-winter-100">{{ top_diagnosis.condition }}</span>
+                            <span class="text-sm text-winter-500 dark:text-winter-400 ml-2">({{ top_diagnosis.confidence }}% match)</span>
+                        </div>
+                        <span class="text-sm px-2 py-1 rounded text-white
+                            {% if top_diagnosis.urgency == 'urgent' %}bg-red-500
+                            {% elif top_diagnosis.urgency == 'high' %}bg-orange-500
+                            {% elif top_diagnosis.urgency == 'medium' %}bg-yellow-500
+                            {% else %}bg-green-500{% endif %}">
+                            {{ top_diagnosis.urgency.title() }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Feedback -->
+                {% if submission.feedback and submission.feedback.comments %}
+                <div class="mb-4">
+                    <h4 class="font-medium text-winter-700 dark:text-winter-300 mb-2">Your feedback:</h4>
+                    <p class="text-sm text-winter-600 dark:text-winter-400 bg-winter-50 dark:bg-winter-700/50 p-3 rounded-lg">
+                        "{{ submission.feedback.comments }}"
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap gap-3 pt-4 border-t border-winter-200 dark:border-winter-700">
+                    <a href="{{ url_for('diagnose') }}" 
+                       method="post"
+                       onclick="event.preventDefault(); document.getElementById('repeat-form-{{ submission.id }}').submit();"
+                       class="bg-ice-600 hover:bg-ice-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+                        <i data-feather="repeat" class="w-4 h-4 mr-1"></i>
+                        Repeat Assessment
+                    </a>
+                    
+                    {% if not submission.feedback %}
+                    <a href="{{ url_for('feedback', submission_id=submission.id) }}" 
+                       class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+                        <i data-feather="message-circle" class="w-4 h-4 mr-1"></i>
+                        Add Feedback
+                    </a>
+                    {% endif %}
+                    
+                    <button onclick="toggleDetails({{ submission.id }})" 
+                            class="bg-winter-600 hover:bg-winter-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+                        <i data-feather="eye" class="w-4 h-4 mr-1"></i>
+                        View Details
+                    </button>
+                </div>
+
+                <!-- Hidden form for repeating assessment -->
+                <form id="repeat-form-{{ submission.id }}" method="POST" action="{{ url_for('diagnose') }}" style="display: none;">
+                    {% if submission.name %}<input type="hidden" name="name" value="{{ submission.name }}">{% endif %}
+                    {% if submission.age %}<input type="hidden" name="age" value="{{ submission.age }}">{% endif %}
+                    {% if submission.gender %}<input type="hidden" name="gender" value="{{ submission.gender }}">{% endif %}
+                    {% if submission.location %}<input type="hidden" name="location" value="{{ submission.location }}">{% endif %}
+                    {% for symptom in submission.symptoms_selected %}
+                    <input type="hidden" name="symptoms" value="{{ symptom }}">
+                    {% endfor %}
+                    {% if submission.symptoms_text %}<input type="hidden" name="symptoms_text" value="{{ submission.symptoms_text }}">{% endif %}
+                </form>
+
+                <!-- Collapsible Details -->
+                <div id="details-{{ submission.id }}" class="hidden mt-4 pt-4 border-t border-winter-200 dark:border-winter-700">
+                    {% if submission.diagnosis and submission.diagnosis.diagnoses %}
+                    <h4 class="font-medium text-winter-700 dark:text-winter-300 mb-3">All possible conditions:</h4>
+                    <div class="space-y-3">
+                        {% for diagnosis in submission.diagnosis.diagnoses %}
+                        <div class="bg-winter-50 dark:bg-winter-700/50 p-3 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-medium text-winter-800 dark:text-winter-100">{{ diagnosis.condition }}</span>
+                                <span class="text-sm font-medium text-winter-600 dark:text-winter-400">{{ diagnosis.confidence }}%</span>
+                            </div>
+                            <p class="text-sm text-winter-600 dark:text-winter-400 mb-2">{{ diagnosis.description }}</p>
+                            <div class="text-xs text-winter-500 dark:text-winter-400">
+                                Urgency: <span class="font-medium">{{ diagnosis.urgency.title() }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-12">
+            <div class="w-24 h-24 bg-winter-100 dark:bg-winter-700 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-feather="file-text" class="w-12 h-12 text-winter-400 dark:text-winter-500"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-winter-800 dark:text-winter-100 mb-2">No assessments yet</h3>
+            <p class="text-winter-600 dark:text-winter-400 mb-6">
+                You haven't completed any health assessments. Start your first assessment to track your health over time.
+            </p>
+            <a href="{{ url_for('index') }}" 
+               class="bg-gradient-to-r from-ice-600 to-ice-700 hover:from-ice-700 hover:to-ice-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl inline-flex items-center">
+                <i data-feather="plus" class="w-5 h-5 mr-2"></i>
+                Start First Assessment
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleDetails(submissionId) {
+    const detailsElement = document.getElementById('details-' + submissionId);
+    if (detailsElement.classList.contains('hidden')) {
+        detailsElement.classList.remove('hidden');
+    } else {
+        detailsElement.classList.add('hidden');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Symptom Assessment - Automated Diagnostic System (ADS){% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <div class="flex items-center justify-center space-x-3 mb-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-ice-500 to-ice-600 rounded-xl flex items-center justify-center">
+                <i data-feather="stethoscope" class="w-7 h-7 text-white"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-winter-800 dark:text-winter-100">Health Assessment</h1>
+        </div>
+        <p class="text-winter-600 dark:text-winter-300 text-lg max-w-2xl mx-auto">
+            Tell us about your symptoms and we'll help identify possible conditions and provide guidance on next steps.
+        </p>
+    </div>
+
+    <!-- Example Symptom Bundles -->
+    <div class="bg-white/60 dark:bg-winter-800/60 backdrop-blur-sm rounded-xl border border-winter-200 dark:border-winter-700 p-6 mb-8">
+        <h3 class="text-lg font-semibold text-winter-800 dark:text-winter-100 mb-4 flex items-center">
+            <i data-feather="lightbulb" class="w-5 h-5 mr-2 text-ice-600"></i>
+            Not sure what to select? Try these common symptom patterns:
+        </h3>
+        <div class="grid md:grid-cols-2 gap-4">
+            {% for bundle in example_bundles %}
+            <button type="button" 
+                    class="example-bundle text-left p-4 rounded-lg border border-winter-200 dark:border-winter-600 bg-winter-50 dark:bg-winter-700/50 hover:bg-ice-50 dark:hover:bg-ice-900/20 transition-colors"
+                    data-symptoms="{{ bundle.symptoms|join(',') }}">
+                <div class="font-medium text-winter-800 dark:text-winter-100 mb-1">{{ bundle.name }}</div>
+                <div class="text-sm text-winter-600 dark:text-winter-300">{{ bundle.description }}</div>
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Main Form -->
+    <form method="POST" action="{{ url_for('diagnose') }}" class="space-y-8">
+        <!-- Personal Information (Optional) -->
+        <div class="bg-white/60 dark:bg-winter-800/60 backdrop-blur-sm rounded-xl border border-winter-200 dark:border-winter-700 p-6">
+            <h2 class="text-xl font-semibold text-winter-800 dark:text-winter-100 mb-4 flex items-center">
+                <i data-feather="user" class="w-5 h-5 mr-2 text-ice-600"></i>
+                Personal Information
+                <span class="ml-2 text-sm font-normal text-winter-500 dark:text-winter-400">(Optional - helps improve recommendations)</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-winter-700 dark:text-winter-300 mb-2">Name</label>
+                    <input type="text" id="name" name="name" 
+                           class="w-full px-4 py-2 rounded-lg border border-winter-300 dark:border-winter-600 bg-white dark:bg-winter-700 text-winter-900 dark:text-winter-100 focus:ring-2 focus:ring-ice-500 focus:border-ice-500 transition-colors"
+                           placeholder="Your name">
+                </div>
+                
+                <div>
+                    <label for="age" class="block text-sm font-medium text-winter-700 dark:text-winter-300 mb-2">Age</label>
+                    <input type="number" id="age" name="age" min="0" max="150"
+                           class="w-full px-4 py-2 rounded-lg border border-winter-300 dark:border-winter-600 bg-white dark:bg-winter-700 text-winter-900 dark:text-winter-100 focus:ring-2 focus:ring-ice-500 focus:border-ice-500 transition-colors"
+                           placeholder="Your age">
+                </div>
+                
+                <div>
+                    <label for="gender" class="block text-sm font-medium text-winter-700 dark:text-winter-300 mb-2">Gender</label>
+                    <select id="gender" name="gender"
+                            class="w-full px-4 py-2 rounded-lg border border-winter-300 dark:border-winter-600 bg-white dark:bg-winter-700 text-winter-900 dark:text-winter-100 focus:ring-2 focus:ring-ice-500 focus:border-ice-500 transition-colors">
+                        <option value="">Select gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="location" class="block text-sm font-medium text-winter-700 dark:text-winter-300 mb-2">Location (City/Region)</label>
+                    <input type="text" id="location" name="location"
+                           class="w-full px-4 py-2 rounded-lg border border-winter-300 dark:border-winter-600 bg-white dark:bg-winter-700 text-winter-900 dark:text-winter-100 focus:ring-2 focus:ring-ice-500 focus:border-ice-500 transition-colors"
+                           placeholder="e.g., Accra, Kumasi">
+                </div>
+            </div>
+        </div>
+
+        <!-- Symptom Selection -->
+        <div class="bg-white/60 dark:bg-winter-800/60 backdrop-blur-sm rounded-xl border border-winter-200 dark:border-winter-700 p-6">
+            <h2 class="text-xl font-semibold text-winter-800 dark:text-winter-100 mb-4 flex items-center">
+                <i data-feather="check-square" class="w-5 h-5 mr-2 text-ice-600"></i>
+                Select Your Symptoms
+                <span class="ml-2 text-sm font-normal text-red-500">*Required</span>
+            </h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                {% for symptom in symptoms %}
+                <label class="flex items-center p-3 rounded-lg border border-winter-200 dark:border-winter-600 bg-winter-50 dark:bg-winter-700/50 hover:bg-ice-50 dark:hover:bg-ice-900/20 transition-colors cursor-pointer">
+                    <input type="checkbox" name="symptoms" value="{{ symptom.code }}" 
+                           class="w-4 h-4 text-ice-600 bg-white dark:bg-winter-700 border-winter-300 dark:border-winter-600 rounded focus:ring-ice-500 focus:ring-2">
+                    <span class="ml-3 text-sm text-winter-700 dark:text-winter-300">{{ symptom.display }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Free Text Symptoms -->
+        <div class="bg-white/60 dark:bg-winter-800/60 backdrop-blur-sm rounded-xl border border-winter-200 dark:border-winter-700 p-6">
+            <h2 class="text-xl font-semibold text-winter-800 dark:text-winter-100 mb-4 flex items-center">
+                <i data-feather="edit-3" class="w-5 h-5 mr-2 text-ice-600"></i>
+                Describe Additional Symptoms
+                <span class="ml-2 text-sm font-normal text-winter-500 dark:text-winter-400">(Optional)</span>
+            </h2>
+            
+            <div>
+                <label for="symptoms_text" class="block text-sm font-medium text-winter-700 dark:text-winter-300 mb-2">
+                    Describe any other symptoms you're experiencing:
+                </label>
+                <textarea id="symptoms_text" name="symptoms_text" rows="4"
+                          class="w-full px-4 py-3 rounded-lg border border-winter-300 dark:border-winter-600 bg-white dark:bg-winter-700 text-winter-900 dark:text-winter-100 focus:ring-2 focus:ring-ice-500 focus:border-ice-500 transition-colors"
+                          placeholder="For example: 'I have been feeling weak for 3 days and have stomach pain after eating...'"></textarea>
+                <p class="mt-2 text-sm text-winter-500 dark:text-winter-400">
+                    Use simple terms to describe how you feel, when symptoms started, and anything that makes them better or worse.
+                </p>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-center">
+            <button type="submit" 
+                    class="bg-gradient-to-r from-ice-600 to-ice-700 hover:from-ice-700 hover:to-ice-800 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center mx-auto">
+                <i data-feather="search" class="w-5 h-5 mr-2"></i>
+                Get Health Assessment
+            </button>
+            <p class="mt-3 text-sm text-winter-500 dark:text-winter-400">
+                This assessment takes just a few seconds
+            </p>
+        </div>
+    </form>
+</div>
+{% endblock %}
