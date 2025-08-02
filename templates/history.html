@@ -120,7 +120,6 @@
                     <div class="flex items-center justify-between bg-winter-50 dark:bg-winter-700/50 p-3 rounded-lg">
                         <div>
                             <span class="font-medium text-winter-800 dark:text-winter-100">{{ top_diagnosis.condition }}</span>
-                            <span class="text-sm text-winter-500 dark:text-winter-400 ml-2">({{ top_diagnosis.confidence }}% match)</span>
                         </div>
                         <span class="text-sm px-2 py-1 rounded text-white
                             {% if top_diagnosis.urgency == 'urgent' %}bg-red-500
@@ -187,9 +186,8 @@
                     <div class="space-y-3">
                         {% for diagnosis in submission.diagnosis.diagnoses %}
                         <div class="bg-winter-50 dark:bg-winter-700/50 p-3 rounded-lg">
-                            <div class="flex items-center justify-between mb-2">
+                            <div class="mb-2">
                                 <span class="font-medium text-winter-800 dark:text-winter-100">{{ diagnosis.condition }}</span>
-                                <span class="text-sm font-medium text-winter-600 dark:text-winter-400">{{ diagnosis.confidence }}%</span>
                             </div>
                             <p class="text-sm text-winter-600 dark:text-winter-400 mb-2">{{ diagnosis.description }}</p>
                             <div class="text-xs text-winter-500 dark:text-winter-400">

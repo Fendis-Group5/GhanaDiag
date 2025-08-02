@@ -65,9 +65,8 @@
             <h3 class="font-medium text-winter-700 dark:text-winter-300 mb-2">Our assessment suggested:</h3>
             {% set top_diagnosis = submission.diagnosis.diagnoses[0] %}
             <div class="bg-ice-50 dark:bg-ice-900/20 border border-ice-200 dark:border-ice-800 p-4 rounded-lg">
-                <div class="flex items-center justify-between mb-2">
+                <div class="mb-2">
                     <span class="font-semibold text-ice-800 dark:text-ice-200">{{ top_diagnosis.condition }}</span>
-                    <span class="text-sm font-medium text-ice-600 dark:text-ice-400">{{ top_diagnosis.confidence }}% confidence</span>
                 </div>
                 <p class="text-ice-700 dark:text-ice-300 text-sm">{{ top_diagnosis.description }}</p>
             </div>

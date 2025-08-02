@@ -103,15 +103,7 @@
                     </h3>
                     <p class="text-winter-600 dark:text-winter-400 mb-3">{{ condition.description }}</p>
                 </div>
-                <div class="ml-4 text-right">
-                    <div class="text-sm font-medium text-winter-500 dark:text-winter-400 mb-1">Match Confidence</div>
-                    <div class="text-2xl font-bold 
-                        {% if condition.confidence >= 70 %}text-red-600 dark:text-red-400
-                        {% elif condition.confidence >= 40 %}text-yellow-600 dark:text-yellow-400
-                        {% else %}text-green-600 dark:text-green-400{% endif %}">
-                        {{ condition.confidence }}%
-                    </div>
-                </div>
+
             </div>
 
             <!-- Urgency Badge -->
