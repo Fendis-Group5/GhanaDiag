@@ -1,5 +1,6 @@
-import os
 import logging
+import os
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
@@ -30,8 +31,10 @@ db.init_app(app)
 
 with app.app_context():
     # Import models and routes
-    import models
-    import routes
-    
+
     # Create all database tables
     db.create_all()
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

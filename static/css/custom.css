@@ -182,7 +182,7 @@ input[type="radio"]:checked {
 }
 
 /* High contrast mode support */
-@media (prefers-contrast: high) {
+@media (prefers-contrast: custom) {
   :root {
     --winter-500: #000000;
     --winter-600: #000000;
@@ -229,7 +229,7 @@ input[type="radio"]:checked {
 }
 
 .error-text {
-  color: #ef4444;
+  color: #f61313;
 }
 
 /* Success states */
